@@ -1,6 +1,8 @@
+%%-*- mode: erlang -*-
+
 {application, exomler, [
     {description, ""},
-    {vsn, git},
+    {vsn, "0.6.0"},
     {registered, []},
     {applications, [
         kernel,

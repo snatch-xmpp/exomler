@@ -1,37 +1,42 @@
-#Exomler [![Build Status](https://travis-ci.org/erlangbureau/exomler.svg?branch=master)](https://travis-ci.org/erlangbureau/exomler)
+# Exomler
+[![Build Status](https://travis-ci.org/erlangbureau/exomler.svg?branch=master)](https://travis-ci.org/erlangbureau/exomler)
+[![Coverage Status](https://coveralls.io/repos/github/erlangbureau/exomler/badge.svg?branch=master)](https://coveralls.io/github/erlangbureau/exomler?branch=master)
 
-It is a very simple DOM XML parser that can work only with valid and well-formed XML.
+Exomler is a fast and simple DOM XML parser.
+It is super fast, convenient and has very low memory footprint. Really!
 
-It is fast enough, convenient and has very low memory footprint due to binary usage. Really!
+## Usage
 
-##Usage
+### Examples of decoding
 
-### Decode
-
+Decode (attributes as proplists, default behaviour):
 ```erlang
-{xml, Version, Encoding, RootElement} = exomler:decode_document(XMLDocument).
-RootElement = exomler:decode(XML).
-{Tag, Attrs, Content} = RootElement.
+1> XML = <<"<html key=\"value\">Body</html>">>.
+
+2> exomler:decode(XML).
+{<<"html">>, [{<<"key">>, <<"value">>}], [<<"Body">>]}
 ```
 
-### Encode
+Decode (attributes as maps)
 ```erlang
-RootElement = {Tag, Attrs, Content},
-XMLDocument = exomler:encode_document({xml, Version, Encoding, RootElement}).
-XML = exomler:encode(RootElement).
+1> XML = <<"<html key=\"value\">Body</html>">>.
+
+2> exomler:decode(XML, #{attributes => map}).
+{<<"html">>,#{<<"key">> => <<"value">>},[<<"Body">>]}
 ```
 
-Where Tag is binary name of root tag, Attrs is a {Key,Value} list of attrs and Content is
-list of inner tags or Text which is binary.
+### Examples of encoding
 
-### Example
 ```erlang
-XML = <<"<html key=\"value\">Body</html>">>.
-{<<"html">>, [{<<"key">>, <<"value">>}], [<<"Body">>]} = exomler:decode(XML).
-XML = exomler:encode({<<"html">>, [{<<"key">>, <<"value">>}], [<<"Body">>]}).
+1> Xml = {<<"html">>,#{<<"key">> => <<"value">>},[<<"Body">>]}.
+2> exomler:encode(Xml).
+<<"<html key=\"value\">Body</html>">>
 ```
 
-##Benchmarking
+## Benchmarking
+
+## Decoding
+
 ```
 ./exomler_bench test_01.xml 1000
 -------------------------------------------------------
@@ -70,6 +75,4 @@ XML = exomler:encode({<<"html">>, [{<<"key">>, <<"value">>}], [<<"Body">>]}).
    mochiweb     1712mcs     1883mls     257KB    11MB/s
 -------------------------------------------------------
 ```
-
-Here we can see that several files of different sizes and content parsed 1000 times by different parsers.
 

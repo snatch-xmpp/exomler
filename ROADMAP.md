@@ -1,7 +1,7 @@
 ROADMAP
 =======
 
- * Add XML SAX parser
-
- * Add not strict parsing as option
+ 1. XML Namespaces
+ 2. SAX parser
+ 3. Not strict parsing as option
 
