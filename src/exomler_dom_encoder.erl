@@ -1,21 +1,25 @@
 -module(exomler_dom_encoder).
 
 %% API
--export([encode_document/1]).
--export([encode/1]).
+-export([encode/2]).
 
 %% API
-encode_document({xml, Version, Encoding, RootEntity}) when
-        is_atom(Version), is_atom(Encoding), is_tuple(RootEntity) ->
-    Prolog = prolog(version(Version), encoding(Encoding)),
-    Root = tag(RootEntity),
-    <<Prolog/binary, Root/binary>>.
-
-encode(Entity) when is_tuple(Entity)->
-    tag(Entity).
+encode(RootEntity, Opts) when is_tuple(RootEntity) ->
+    case exomler:get_value(prolog, Opts) of
+        undefined ->
+            tag(RootEntity);
+        {xml, Version, Encoding} ->
+            Prolog = encode_prolog(version(Version), encoding(Encoding)),
+            Root = tag(RootEntity),
+            <<Prolog/binary, Root/binary>>;
+        #{document := xml, version := Version, encoding := Encoding} ->
+            Prolog = encode_prolog(version(Version), encoding(Encoding)),
+            Root = tag(RootEntity),
+            <<Prolog/binary, Root/binary>>
+    end.
 
 %% internal
-prolog(Version, Encoding) ->
+encode_prolog(Version, Encoding) ->
     Attrs = [{<<"version">>, Version}, {<<"encoding">>, Encoding}],
     BinAttrs = tag_attrs(Attrs),
     <<"<?xml", BinAttrs/binary, " ?>\n">>.
@@ -77,29 +81,29 @@ escape(<<>>, Escaped) ->
 encode_document_test_() ->
     [
     ?_assertEqual(<<"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<html></html>">>,
-        encode_document({xml, '1.0', utf8, {<<"html">>, [], []}}))
+        encode({<<"html">>, [], []}, #{prolog => {xml, '1.0', utf8}}))
     ].
 
 encode_tag_test_() ->
     [
     ?_assertEqual(<<"<html></html>">>,
-        encode({<<"html">>, [], []}))
+        encode({<<"html">>, [], []}, #{}))
     ].
 
 encode_content_test_() ->
     [
     ?_assertEqual(<<"<html>Body</html>">>,
-        encode({<<"html">>, [], [<<"Body">>]})),
+        encode({<<"html">>, [], [<<"Body">>]}, #{})),
     ?_assertEqual(<<"<html>TextBefore<head>Body</head>TextAfter</html>">>,
-        encode({<<"html">>, [], [<<"TextBefore">>, {<<"head">>, [], [<<"Body">>]}, <<"TextAfter">>]}))
+        encode({<<"html">>, [], [<<"TextBefore">>, {<<"head">>, [], [<<"Body">>]}, <<"TextAfter">>]}, #{}))
     ].
 
 encode_attributes_test_() ->
     [
     ?_assertEqual(<<"<html xmlns=\"w3c\"></html>">>,
-        encode({<<"html">>, [{<<"xmlns">>,<<"w3c">>}], []})),
+        encode({<<"html">>, [{<<"xmlns">>,<<"w3c">>}], []}, #{})),
     ?_assertEqual(<<"<foo bar=\"&amp;&lt;&gt;\"></foo>">>,
-        encode({<<"foo">>, [{<<"bar">>,<<"&<>">>}], []}))
+        encode({<<"foo">>, [{<<"bar">>,<<"&<>">>}], []}, #{}))
     ].
 
 -endif.
