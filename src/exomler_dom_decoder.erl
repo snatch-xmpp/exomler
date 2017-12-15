@@ -7,7 +7,7 @@
 -include("exomler.hrl").
 
 %% API
-decode_prolog(Bin, Opts) ->
+decode_prolog(Bin, Opts) when is_binary(Bin) ->
     case decode_prolog(Bin) of
         {<<>>, _Bin} ->
             {error, no_prolog};
@@ -17,6 +17,11 @@ decode_prolog(Bin, Opts) ->
             Version  = get_version(Attrs),
             Encoding = get_encoding(Attrs),
             meta(Format, Version, Encoding)
+    end;
+decode_prolog(Filename, Opts) when is_list(Filename) ->
+    case file:read_file(Filename) of
+        {ok, Bin}   -> decode_prolog(Bin, Opts);
+        Err         -> Err
     end.
 
 
@@ -24,7 +29,12 @@ decode(Bin, Opts) when is_binary(Bin) ->
     {_, Rest1} = decode_prolog(Bin),
     Rest2 = skip_doctype(exomler_bstring:trim_left(Rest1)),
     {Tag, _Rest} = decode_tag(exomler_bstring:trim_left(Rest2), Opts),
-    Tag.
+    Tag;
+decode(Filename, Opts) when is_list(Filename) ->
+    case file:read_file(Filename) of
+        {ok, Bin}   -> decode(Bin, Opts);
+        Err         -> Err
+    end.
 
 
 %% internal
