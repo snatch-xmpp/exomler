@@ -125,6 +125,8 @@ attr_value(<<Blank, Bin/binary>>) when ?IS_BLANK(Blank) ->
 attr_value(<<Quote, Value/binary>>) when ?IS_QUOTE(Quote) ->
     exomler_bstring:split(Value, <<Quote>>).
 
+decode_tag_content(<<>>, _Tag, _Opts) ->
+    {[], <<>>};
 decode_tag_content(<<"<![CDATA[", Bin/binary>>, Tag, Opts) ->
     {Text, Rest1} = exomler_bstring:split(Bin, <<"]]>">>),
     {Content, Rest2} = decode_tag_content(Rest1, Tag, Opts),
